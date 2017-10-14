@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+    
+    
+    <hibernate-mapping>
+    <class name="eddie.shop.order.vo.Order" table="orders">
+    	<id name="oid">
+    		<generator class="native"></generator>
+    	</id>
+    	
+		<property name="total"/>
+		<property name="ordertime"/>
+		<property name="state"/>
+		<property name="name"/>
+		<property name="phone"/>
+		<property name="addr"/>
+		
+		<!-- 一个订单可以有多个订单项 -->
+		<set name="orderItems" order-by="itemid" lazy="false" cascade="save-update">
+			<key column="oid"/>
+			<one-to-many class="eddie.shop.order.vo.OrderItem"/>
+		</set>
+		
+		<!-- 一个用户可以有多个订单 -->
+		<many-to-one name="user" lazy="false" class="eddie.shop.user.vo.User" column="uid"/>
+    	
+    
+    </class>
+
+    
+    
+    </hibernate-mapping>

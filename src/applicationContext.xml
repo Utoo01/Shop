@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+	
+	<!-- 配置连接池: -->
+	<!-- 引入外部属性文件 -->
+	<context:property-placeholder location="classpath:jdbc.properties"/>
+	<!-- 配置C3P0连接池: -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driver}"/>
+		<property name="jdbcUrl" value="${jdbc.url}"/>
+		<property name="user" value="${jdbc.user}"/>
+		<property name="password" value="${jdbc.password}"/>
+	</bean>
+	
+	<!-- Hibernate的相关信息 -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<!-- 注入连接池 -->
+		<property name="dataSource" ref="dataSource"/>
+		<!-- 配置Hibernate的其他的属性 -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.connection.autocommit">false</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+			</props>
+		</property>
+		
+		<!-- 配置Hibernate的映射文件 -->
+		<property name="mappingResources">
+			<list>
+				<value>eddie/shop/user/vo/User.hbm.xml</value>
+				<value>eddie/shop/category/vo/Category.hbm.xml</value>
+				<value>eddie/shop/product/vo/Product.hbm.xml</value>
+				<value>eddie/shop/categorysecond/vo/CategorySecond.hbm.xml</value>
+				<value>eddie/shop/order/vo/Order.hbm.xml</value>
+				<value>eddie/shop/order/vo/OrderItem.hbm.xml</value>
+				<value>eddie/shop/adminuser/vo/AdminUser.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 事务管理: -->
+	<!-- 事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	
+	<!-- 开启注解事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	
+	<!-- Action的配置 ===========================-->
+	
+	<!-- 首页访问的Action -->
+	<bean id="indexAction" class="eddie.shop.index.action.IndexAction" scope="prototype">
+		 <property name="categoryService" ref="categoryService"/>
+		 <property name="productService" ref="productService"/>
+	</bean>
+	
+	<!-- 配置验证码Action -->
+	<bean id="checkImgAction" class="eddie.shop.user.action.CheckImgAction" scope="prototype">
+	</bean>
+	
+	<!-- 用户模块的Action -->
+	<bean id="userAction" class="eddie.shop.user.action.UserAction" scope="prototype">
+		<!-- 注入Service -->
+		<property name="userService" ref="userService"/>
+	</bean>
+	
+	
+	<!-- 商品模块的Action -->
+	<bean id="productAction" class="eddie.shop.product.action.ProductAction" scope="prototype">
+		<property name="productService" ref="productService"/>
+	</bean>
+	
+	<!-- 购物车Action -->
+	
+	<bean id="cartAction" class="eddie.shop.cart.action.CartAction" scope="prototype">
+		<property name="productService" ref="productService"/>
+	</bean>
+
+	<!-- 订单模块的Action -->
+	<bean id="orderAction" class="eddie.shop.order.action.OrderAction" scope="prototype">
+		<property name="orderService" ref="orderService"/>
+	</bean>
+	
+	<bean id="adminUserAction" class="eddie.shop.adminuser.action.AdminUserAction" scope="prototype">
+		<property name="adminUserService" ref="adminUserService"></property>
+	</bean>
+
+	<bean id="adminCategoryAction" class="eddie.shop.category.adminaction.AdminCategoryAction" scope="prototype">
+		<property name="categoryService" ref="categoryService"/>
+	</bean>
+
+	<bean id="adminCategorySecondAction" class="eddie.shop.categorysecond.adminaction.AdminCategorySecondAction" scope="prototype">
+		<property name="categorySecondService" ref="categorySecondService"></property>
+		<property name="categoryService" ref="categoryService"></property>
+	
+	</bean>
+
+	<bean id="adminProductAction" class="eddie.shop.product.adminaction.AdminProductAction" scope="prototype">
+		<property name="productService" ref="productService"></property>
+		<property name="categorySecondService" ref="categorySecondService"></property>
+	</bean>
+	
+	<bean id="adminOrderAction" class="eddie.shop.order.adminaction.AdminOrderAction" scope="prototype">
+		<property name="orderService" ref="orderService"></property>
+	</bean>
+	
+	<bean id="userAdminAction" class="eddie.shop.user.adminaction.UserAdminAction" scope="prototype">
+		<property name="userService" ref="userService"></property>
+	
+	</bean>
+
+
+	<!-- Service的配置  ===========================-->
+	<bean id="userService" class="eddie.shop.user.service.UserService">
+		<property name="userDao" ref="userDao"/>
+	</bean>
+	
+	<bean id="categoryService" class="eddie.shop.category.service.CategoryService">
+		<property name="categoryDao" ref="categoryDao"/>
+	</bean>
+	
+	<bean id="productService" class="eddie.shop.product.service.ProductService">
+		<property name="productDao" ref="productDao"/>
+	</bean>
+	
+	<bean id="orderService" class="eddie.shop.order.service.OrderService">
+		<property name="orderDao" ref="orderDao"/>
+	</bean>
+	
+	<bean id="adminUserService" class="eddie.shop.adminuser.service.AdminUserService">
+		<property name="adminUserDao" ref="adminUserDao"></property>
+	</bean>
+	
+	<bean id="categorySecondService" class="eddie.shop.categorysecond.service.CategorySecondService">
+		<property name="categorySecondDao" ref="categorySecondDao"></property>
+	</bean>
+	
+	
+	<!-- Dao的配置  ===========================-->
+	
+	<!-- 用户 -->
+	<bean id="userDao" class="eddie.shop.user.dao.UserDao">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	
+	<!-- 分类 -->
+	<bean id="categoryDao" class="eddie.shop.category.dao.CategoryDao">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	
+	<!-- 商品 -->
+	<bean id="productDao" class="eddie.shop.product.dao.ProductDao">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	
+	<!-- 订单 -->
+	<bean id="orderDao" class="eddie.shop.order.dao.OrderDao">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	
+	<!-- 后台用户 -->
+	<bean id="adminUserDao" class="eddie.shop.adminuser.dao.AdminUserDao">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+
+	<!-- 后台二级菜单 -->
+	<bean id="categorySecondDao" class="eddie.shop.categorysecond.dao.CategorySecondDao">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	
+
+</beans>
